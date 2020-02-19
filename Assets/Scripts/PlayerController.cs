@@ -1,20 +1,21 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Tilemaps;
+﻿using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
     public JumpCheck jumpcheck;
+    public WallJumpScript rightWalljumpcheck;
+    public WallJumpScript leftWalljumpcheck;
     public GameObject bulletPrefab;
 
     Camera cam;
     public float jumpSpeed;
+    public float wallJumpSpeed;
     public float moveSpeed;
     public float bulletSpeed;
+    public float airControl;
     float moveDirection;
     Rigidbody2D rb2d;
-    
+
 
     // Start is called before the first frame update
     void Start()
@@ -40,12 +41,33 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (jumpcheck.canJump && Input.GetKey(KeyCode.W))
+
+        if (Input.GetKeyDown(KeyCode.W))
         {
-            rb2d.velocity = new Vector2(rb2d.velocity.x, jumpSpeed);
+            if (rightWalljumpcheck.canWallJump)
+            {
+                rb2d.velocity = new Vector2(wallJumpSpeed * -1, jumpSpeed);
+            }
+            else if (leftWalljumpcheck.canWallJump)
+            {
+                rb2d.velocity = new Vector2(wallJumpSpeed, jumpSpeed);
+            }
+            else if (jumpcheck.canJump)
+            {
+                rb2d.velocity = new Vector2(rb2d.velocity.x, jumpSpeed);
+            }
         }
 
-        rb2d.velocity = moveDirection * Vector2.right * Time.deltaTime * moveSpeed + rb2d.velocity.y * Vector2.up;
+        if (jumpcheck.canJump)
+        {
+            rb2d.velocity = moveDirection * Vector2.right * Time.deltaTime * moveSpeed + rb2d.velocity.y * Vector2.up;
+        }
+        else
+        {
+            rb2d.velocity = (moveDirection * Vector2.right * Time.deltaTime * moveSpeed) / airControl + ((rb2d.velocity.x * Vector2.right) * (airControl / 10)) + rb2d.velocity.y * Vector2.up;
+        }
+
+
     }
 
     void Shoot(float angle)
